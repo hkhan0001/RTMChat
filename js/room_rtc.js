@@ -25,11 +25,13 @@ let displayName = sessionStorage.getItem('display_name')
 if(!displayName)
 {
     let newUser = prompt("Please enter a username");
+    location.reload();
 
     if(newUser === null || newUser === '')
     {
         window.location = 'lobby.html';
         alert('Username is Required to Join');
+        location.reload();
     }
     else
     {
@@ -48,24 +50,29 @@ let joinRoomInit = async () =>
     rtmClient = await AgoraRTM.createInstance(APP_ID);
     await rtmClient.login({uid,token})
 
+    await rtmClient.addOrUpdateLocalUserAttributes({'name':displayName})
+
     channel = await rtmClient.createChannel(roomId)
     await channel.join();
 
     channel.on('MemberJoined', handleMemberJoined);
     channel.on('MemberLeft', handleMemberLeft);
+    channel.on('ChannelMessage', handleMessage);
 
     getMembers();
+    addBotMessage(`${displayName} has joined the room.`);
 
     client = AgoraRTC.createClient({mode:'rtc', codec:'vp8'})
     await client.join(APP_ID, roomId, token, uid);
 
     client.on('user-published', handleUserPublished);
     client.on('user-left', handleUserLeft);
-
-    joinStream();
 }
 
 let joinStream = async () => {
+    document.getElementById('join-btn').style.display = 'none';
+    document.getElementsByClassName('stream__actions')[0].style.display = 'flex';
+
     localTracks = await AgoraRTC.createMicrophoneAndCameraTracks({},
         {encoderConfig:{
             width:{min:640, max:1920},
@@ -240,5 +247,9 @@ let toggleScreen = async (e) => {
         switchToCam();
     }
 }
+
+let leaveStream = async (e)
+
+document.getElementById(join-btn).addEventListener('click', joinStream());
 
 joinRoomInit();
